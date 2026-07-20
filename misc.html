@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>More Examples of Work — JD Property Solutions (OKC)</title>
+    <meta name="description" content="A rolling collection of extra job photos from JD Property Solutions — pools, concrete, retaining walls, drainage, and parking lot work across the OKC Metro.">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-white text-gray-800">
+<header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-3">
+            <img src="assets/img/logo_color.png" alt="JD Property Solutions logo" class="h-14 w-auto">
+            <div class="leading-tight">
+                <div class="text-xl font-bold tracking-tight">JD Property Solutions</div>
+                <div class="text-xs text-gray-500">Apartments • Commercial • Pools • Concrete</div>
+            </div>
+        </a>
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+            <a href="services.html" class="hover:text-blue-700">Services</a>
+            <a href="gallery.html" class="hover:text-blue-700">Gallery</a>
+            <a href="misc.html" class="text-blue-700 font-medium">More Examples</a>
+            <a href="about.html" class="hover:text-blue-700">About</a>
+            <a href="contact.html" class="hover:text-blue-700">Contact</a>
+            <a href="contact.html" class="inline-flex items-center rounded-lg border px-3 py-1.5 hover:bg-blue-50">Request a Site Walk</a>
+        </nav>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold mb-2">More Examples of Work</h1>
+    <p class="text-gray-600 mb-8">A rolling look at extra jobs and photos from around the OKC Metro. Click any photo to view it larger.</p>
+
+    <div id="loading" class="text-gray-500 py-12 text-center">Loading photos…</div>
+    <div id="empty" class="hidden text-gray-500 py-12 text-center">
+        No photos found yet. Add images to <code class="bg-gray-100 px-1.5 py-0.5 rounded">assets/img/imgs1/</code> in the repo and they'll show up here automatically.
+    </div>
+    <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+</main>
+
+<footer class="mt-16 border-t">
+    <div class="max-w-7xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-8 text-sm">
+        <div>
+            <img src="assets/img/logo_color.png" class="h-12 mb-3" alt="JDPS">
+            <p class="text-gray-600">Apartments • Commercial • Pools • Concrete</p>
+            <p class="mt-2 text-gray-500">Serving the Greater Oklahoma City Metro Area</p>
+        </div>
+        <div>
+            <div class="font-semibold mb-2">Quick Links</div>
+            <ul class="space-y-1">
+                <li><a href="services.html" class="hover:text-blue-700">Services</a></li>
+                <li><a href="gallery.html" class="hover:text-blue-700">Gallery</a></li>
+                <li><a href="misc.html" class="hover:text-blue-700">More Examples</a></li>
+                <li><a href="about.html" class="hover:text-blue-700">About</a></li>
+                <li><a href="contact.html" class="hover:text-blue-700">Contact</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="font-semibold mb-2">Contact</div>
+            <p class="text-gray-600">Email: <a class="text-blue-700 hover:underline" href="mailto:durocher@cox.net">durocher@cox.net</a></p>
+            <p class="text-gray-600 mt-1">Call: <a class="text-blue-700 hover:underline" href="tel:+14054103084">405-410-3084</a></p>
+            <p class="mt-2 text-gray-500">© 2025 JD Property Solutions</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Lightbox -->
+<div id="lightbox" class="hidden fixed inset-0 z-50 bg-black/90 items-center justify-center p-4 cursor-zoom-out">
+    <img id="lightbox-img" src="" alt="" class="max-h-[90vh] max-w-[95vw] object-contain rounded-lg shadow-2xl">
+    <button id="lightbox-close" aria-label="Close" class="absolute top-4 right-5 text-white text-4xl leading-none hover:text-gray-300">&times;</button>
+</div>
+
+<script>
+    const OWNER = 'swag53';
+    const REPO = 'JDPS-website';
+    const BRANCH = 'main';
+    const FOLDER = 'assets/img/imgs1';
+
+    const IMAGE_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
+
+    const grid = document.getElementById('grid');
+    const loading = document.getElementById('loading');
+    const empty = document.getElementById('empty');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    function openLightbox(src, alt) {
+      lightboxImg.src = src;
+      lightboxImg.alt = alt;
+      lightbox.classList.remove('hidden');
+      lightbox.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      lightbox.classList.add('hidden');
+      lightbox.classList.remove('flex');
+      lightboxImg.src = '';
+      document.body.style.overflow = '';
+    }
+    lightbox.addEventListener('click', closeLightbox);
+    document.getElementById('lightbox-close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    async function loadImages() {
+      try {
+        const apiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FOLDER}?ref=${BRANCH}`;
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
+        const files = await res.json();
+
+        const images = (Array.isArray(files) ? files : [])
+          .filter(f => f.type === 'file' && IMAGE_EXT.test(f.name))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        loading.classList.add('hidden');
+
+        if (images.length === 0) {
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        const frag = document.createDocumentFragment();
+        images.forEach(file => {
+          const src = file.download_url;
+          const fig = document.createElement('figure');
+          fig.className = 'border rounded-xl overflow-hidden group cursor-pointer';
+          fig.innerHTML = `
+            <div class="overflow-hidden h-40 sm:h-48">
+              <img src="${src}" loading="lazy" alt="Job site photo"
+                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+            </div>
+          `;
+          fig.addEventListener('click', () => openLightbox(src, 'Job site photo'));
+          frag.appendChild(fig);
+        });
+        grid.appendChild(frag);
+      } catch (err) {
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
+        empty.textContent = 'Photos couldn\'t be loaded right now. Please refresh, or check back shortly.';
+        console.error('Failed to load images:', err);
+      }
+    }
+
+    loadImages();
+</script>
+</body>
+</html>
